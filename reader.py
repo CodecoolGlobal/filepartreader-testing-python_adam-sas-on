@@ -1,0 +1,2 @@
+class FilePartReader:
+    pass  # TODO
