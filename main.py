@@ -79,7 +79,7 @@ def select_file(stdscr, dir_path="resources/"):
 	return files[file_no]
 #
 
-def main_menu(stdscr, selected, row_begin=2, case_sensitive=True, unique=False):
+def main_menu(stdscr, selected, case_sensitive=True, unique=False, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
 
@@ -119,6 +119,7 @@ def run(stdscr):
 	selected_file = ""
 	case_sensitive = True
 	words_uniqueness = False
+	check_keys = {curses.KEY_STAB, curses.KEY_ENTER, 10, curses.KEY_MARK, curses.KEY_SELECT, ' ', ord(' ')}
 
 	cmd = 0
 	run = True
@@ -128,13 +129,13 @@ def run(stdscr):
 		if len(selected_file):
 			stdscr.addstr(1, 7, "Analysis  {}".format(selected_file) )
 
-		menu_len = main_menu(stdscr, cmd)
+		menu_len = main_menu(stdscr, cmd, case_sensitive, words_uniqueness)
 
 		c = stdscr.getch()
 
 		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
 			selected_file = select_file(stdscr)
-		elif cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10):
+		elif (cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
 			run = False
 		elif c == curses.KEY_UP and cmd > 0:
 			cmd -= 1
@@ -142,6 +143,10 @@ def run(stdscr):
 			cmd += 1
 		elif c == ord('1'):
 			cmd = 0
+		elif cmd == 2 and c in check_keys:
+			case_sensitive = False if case_sensitive else True
+		elif cmd == 3 and c in check_keys:
+			words_uniqueness = False if words_uniqueness else True
 		elif c == ord('q'):
 			cmd = menu_len - 1
 	#
