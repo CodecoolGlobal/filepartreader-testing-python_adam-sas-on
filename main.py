@@ -80,6 +80,59 @@ def select_file(stdscr, dir_path="resources/"):
 	return files[file_no]
 #
 
+def set_range(stdscr, current_range, row_begin=2):
+	stdscr.move(row_begin, 0)
+	stdscr.clrtobot()
+
+	stdscr.addstr(row_begin, 4, "Range of analysis: ")
+
+	menus = ["Beginning of the range: {}", "End of the range: {}", "Quit"]
+
+	numbers={ord('0'), ord('1'), ord('2'), ord('3'), ord('4'), ord('5'), ord('6'), ord('7'), ord('8'), ord('9')}
+
+	ind = 0
+	run = True
+	while run:
+		row = row_begin + 1
+		stdscr.addstr(row, 2, menus[0].format(current_range[0]))
+		row += 1
+		stdscr.addstr(row, 2, menus[1].format(current_range[1]))
+		row += 1
+		stdscr.addstr(row, 2, menus[2])
+
+		if ind == 0 or ind == 1:
+			stdscr.move(row_begin + 1 + ind, 0)
+			stdscr.clrtoeol()
+			if ind == 0:
+				stdscr.addstr(row_begin + 1, 2, menus[0].format(current_range[0]), curses.A_BOLD)
+			else:
+				stdscr.addstr(row_begin + 2, 2, menus[1].format(current_range[1]), curses.A_BOLD)
+		else:
+			stdscr.addstr(row_begin + len(menus), 2, menus[-1], curses.A_BOLD)
+
+		c = stdscr.getch()
+
+		if c == curses.KEY_UP and ind > 0:
+			ind -= 1
+		elif c == curses.KEY_DOWN and ind < 2:
+			ind += 1
+		elif ind == 2 and (c == curses.KEY_ENTER or c==10):
+			run = False
+	#
+
+#
+
+def analyze_file(stdscr, analyzer_class: FileAnalyzer, row_begin=2):
+	stdscr.move(row_begin, 0)
+	stdscr.clrtobot()
+
+	stdscr.addstr(row_begin, 2, "Range of analysis: ")
+
+	c = stdscr.getch()
+
+	pass
+#
+
 def main_menu(stdscr, selected, file_to_analyze, case_sensitive=True, unique=False, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
@@ -142,6 +195,9 @@ def run(stdscr):
 
 		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
 			selected_file = select_file(stdscr)
+		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
+			interval = (2, 3)
+			set_range(stdscr, interval)
 		elif (cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
 			run = False
 		elif c == curses.KEY_UP and cmd > 0:
@@ -154,6 +210,8 @@ def run(stdscr):
 			case_sensitive = False if case_sensitive else True
 		elif cmd == 3 and c in check_keys:
 			words_uniqueness = False if words_uniqueness else True
+		elif cmd == menu_len-2 and len(selected_file):
+			analyze_file(stdscr, analyzer)
 		elif c == ord('q'):
 			cmd = menu_len - 1
 	#
