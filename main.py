@@ -79,6 +79,35 @@ def select_file(stdscr, dir_path="resources/"):
 	return files[file_no]
 #
 
+def main_menu(stdscr, selected, row_begin=2, case_sensitive=True, unique=False):
+	stdscr.move(row_begin, 0)
+	stdscr.clrtobot()
+
+	menus = ["1. select file to analyze", "2. set read range"]
+	if case_sensitive:
+		menus.append("[x] case sensitive")
+	else:
+		menus.append("[ ] case sensitive")
+
+	if unique:
+		menus.append("[x] uniqueness")
+	else:
+		menus.append("[ ] uniqueness")
+
+	menus.append("q. exit")
+
+	row = row_begin
+	i = 0
+	for menu in menus:
+		if selected == i:
+			stdscr.addstr(row, 2, menu, curses.A_BOLD)
+		else:
+			stdscr.addstr(row, 2, menu)
+		i += 1
+		row += 1
+	#
+	return i
+#
 
 def run(stdscr):
 	stdscr = curses.initscr()
@@ -88,17 +117,33 @@ def run(stdscr):
 	stdscr.keypad(True)
 
 	selected_file = ""
+	case_sensitive = True
+	words_uniqueness = False
 
 	cmd = 0
 	run = True
 	stdscr.addstr(0, 1, "  Filepartreader testing")
 
 	while run:
-		file_to_analyze = select_file(stdscr)
-		stdscr.addstr(2, 1, file_to_analyze)
+		if len(selected_file):
+			stdscr.addstr(1, 7, "Analysis  {}".format(selected_file) )
+
+		menu_len = main_menu(stdscr, cmd)
 
 		c = stdscr.getch()
-		run = False
+
+		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
+			selected_file = select_file(stdscr)
+		elif cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10):
+			run = False
+		elif c == curses.KEY_UP and cmd > 0:
+			cmd -= 1
+		elif c == curses.KEY_DOWN and cmd < menu_len-1:
+			cmd += 1
+		elif c == ord('1'):
+			cmd = 0
+		elif c == ord('q'):
+			cmd = menu_len - 1
 	#
 
 	curses.nocbreak()
