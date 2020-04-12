@@ -1,6 +1,7 @@
 import os
 import curses
-import analyzer
+from reader import FilePartReader
+from analyzer import FileAnalyzer
 
 def files_in_dir(path):
 	files = []
@@ -79,7 +80,7 @@ def select_file(stdscr, dir_path="resources/"):
 	return files[file_no]
 #
 
-def main_menu(stdscr, selected, case_sensitive=True, unique=False, row_begin=2):
+def main_menu(stdscr, selected, file_to_analyze, case_sensitive=True, unique=False, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
 
@@ -93,6 +94,9 @@ def main_menu(stdscr, selected, case_sensitive=True, unique=False, row_begin=2):
 		menus.append("[x] uniqueness")
 	else:
 		menus.append("[ ] uniqueness")
+
+	if len(file_to_analyze):
+		menus.append("   Analyze  {}".format(file_to_analyze))
 
 	menus.append("q. exit")
 
@@ -121,6 +125,9 @@ def run(stdscr):
 	words_uniqueness = False
 	check_keys = {curses.KEY_STAB, curses.KEY_ENTER, 10, curses.KEY_MARK, curses.KEY_SELECT, ' ', ord(' ')}
 
+	reader = FilePartReader()
+	analyzer = FileAnalyzer(reader)
+
 	cmd = 0
 	run = True
 	stdscr.addstr(0, 1, "  Filepartreader testing")
@@ -129,7 +136,7 @@ def run(stdscr):
 		if len(selected_file):
 			stdscr.addstr(1, 7, "Analysis  {}".format(selected_file) )
 
-		menu_len = main_menu(stdscr, cmd, case_sensitive, words_uniqueness)
+		menu_len = main_menu(stdscr, cmd, selected_file, case_sensitive, words_uniqueness)
 
 		c = stdscr.getch()
 
