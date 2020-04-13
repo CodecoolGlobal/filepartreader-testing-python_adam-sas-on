@@ -137,15 +137,57 @@ def set_range(stdscr, current_range, upper_limit, row_begin=2):
 	return (local_range[0], local_range[1])
 #
 
+def analyzer_menu(stdscr, selected, substring, row_begin=3):
+	stdscr.move(row_begin, 0)
+	stdscr.clrtobot()
+
+	menus = ["1. get words ordered alphabetically", "2. get strings which palindromes", "3. get words containing substring: \"" + substring + "\"", "q. exit"]
+
+	row = row_begin
+	for menu in menus:
+		stdscr.addstr(row, 2, menu)
+		row += 1
+	#
+	if selected >= 0 and selected < len(menus):
+		row = row_begin + selected
+		stdscr.addstr(row, 2, menus[selected], curses.A_BOLD)
+#
+
 def analyze_file(stdscr, analyzer_class: FileAnalyzer, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
 
-	stdscr.addstr(row_begin, 2, "Range of analysis: ")
+	stdscr.addstr(row_begin, 3, "Range of analysis: ")
 
-	c = stdscr.getch()
+	chars = {ord('a')}
+	substring = ""
 
-	pass
+	cmd = 0
+	run = True
+	while run:
+		analyzer_menu(stdscr, cmd, substring)
+
+		c = stdscr.getch()
+
+		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
+			pass
+		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
+			pass
+		elif cmd == 2 and c != curses.KEY_UP and c != curses.KEY_DOWN:
+			if c == curses.KEY_ENTER or c==10:
+				pass
+			elif c == curses.KEY_BACKSPACE and len(substring) > 0:
+				substring = substring[:-1]
+			elif c in chars:
+				substring += str(c)
+		elif (cmd == 3 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
+			run = False
+		elif c == curses.KEY_UP and cmd > 0:
+			cmd -= 1
+		elif c == curses.KEY_DOWN and cmd < 3:
+			cmd += 1
+	#
+
 #
 
 def main_menu(stdscr, selected, file_to_analyze, case_sensitive=True, unique=False, row_begin=2):
@@ -164,20 +206,22 @@ def main_menu(stdscr, selected, file_to_analyze, case_sensitive=True, unique=Fal
 		menus.append("[ ] uniqueness")
 
 	if len(file_to_analyze):
-		menus.append("   Analyze  {}".format(file_to_analyze))
+		menus.append("3. Analyze  {}".format(file_to_analyze))
 
 	menus.append("q. exit")
 
 	row = row_begin
 	i = 0
 	for menu in menus:
-		if selected == i:
-			stdscr.addstr(row, 2, menu, curses.A_BOLD)
-		else:
-			stdscr.addstr(row, 2, menu)
-		i += 1
+		stdscr.addstr(row, 2, menu)
 		row += 1
+		i += 1
 	#
+
+	if selected >= 0 and selected < len(menus):
+		row = row_begin + selected
+		stdscr.addstr(row, 2, menus[selected], curses.A_BOLD)
+
 	return i
 #
 
@@ -188,6 +232,7 @@ def run(stdscr):
 	curses.cbreak()
 	stdscr.keypad(True)
 
+	dir_path = "resources/"
 	selected_file = ""
 	case_sensitive = True
 	words_uniqueness = False
@@ -210,14 +255,21 @@ def run(stdscr):
 
 		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
 			selected_file = select_file(stdscr)
+			reader.setup(dir_path + selected_file, 1, -1)
 		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
-			pass
+			upper_limit = reader.lines_in_file()
+			read_range = set_range(stdscr, reader.get_read_range(), upper_limit)
+			reader.set_read_range(read_range[0], read_range[1])
 		elif (cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
 			run = False
 		elif c == curses.KEY_UP and cmd > 0:
 			cmd -= 1
+			if cmd == 1 and len(selected_file) < 1:
+				cmd = 0
 		elif c == curses.KEY_DOWN and cmd < menu_len-1:
 			cmd += 1
+			if cmd == 1 and len(selected_file) < 1:
+				cmd += 1
 		elif c == ord('1'):
 			cmd = 0
 		elif cmd == 2 and c in check_keys:
