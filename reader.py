@@ -6,6 +6,7 @@ class FilePartReader:
 		self.file_path = ""
 		self.from_line = -1
 		self.to_line = -1
+		self.max_lines = -1
 		self.file_exists = False
 		self.charset = ""
 	#
@@ -14,19 +15,12 @@ class FilePartReader:
 			self.file_exists = False
 			raise ValueError("FilePartReader.setup: wrong arguments from_line and/or to_line!")
 
-		self.file_path = path
 		self.from_line = from_line
 		self.to_line = to_line
-		if os.path.isfile(path):
-			self.file_exists = True
-			with open(self.file_path, 'rb') as f:
-				rawdata = f.read()
-				chars = chardet.detect(rawdata)
-				self.charset = chars['encoding']
-				if self.to_line < 0:
-					self.to_line = self.lines_in_file()
-		else:
-			self.file_exists = False
+
+		self.set_file_path(path)
+		if self.to_line < 0:
+			self.to_line = self.max_lines
 
 	def read(self):
 		if not self.file_exists:
@@ -51,15 +45,22 @@ class FilePartReader:
 
 	def set_read_range(self, from_line, to_line=-1):
 		if from_line < 1 or (from_line > to_line and to_line != -1):
-			raise ValueError("FilePartReader.setup: wrong arguments from_line and/or to_line!")
+			raise ValueError("FilePartReader.set_read_range: wrong arguments from_line and/or to_line!")
 
 		self.from_line = from_line
 		self.to_line = to_line
 
 	def set_file_path(self, new_file):
 		self.file_path = new_file
-		if os.path.isfile(path):
+		if os.path.isfile(new_file):
 			self.file_exists = True
+			with open(self.file_path, 'rb') as f:
+				rawdata = f.read()
+				chars = chardet.detect(rawdata)
+				self.charset = chars['encoding']
+				if self.to_line < 0:
+					self.max_lines = self.lines_in_file()
+			#
 		else:
 			self.file_exists = False
 	#
