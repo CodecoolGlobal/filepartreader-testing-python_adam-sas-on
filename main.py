@@ -80,7 +80,7 @@ def select_file(stdscr, dir_path="resources/"):
 	return files[file_no]
 #
 
-def set_range(stdscr, current_range, row_begin=2):
+def set_range(stdscr, current_range, upper_limit, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
 
@@ -88,15 +88,16 @@ def set_range(stdscr, current_range, row_begin=2):
 
 	menus = ["Beginning of the range: {}", "End of the range: {}", "Quit"]
 
-	numbers={ord('0'), ord('1'), ord('2'), ord('3'), ord('4'), ord('5'), ord('6'), ord('7'), ord('8'), ord('9')}
+	digits={ord('0'), ord('1'), ord('2'), ord('3'), ord('4'), ord('5'), ord('6'), ord('7'), ord('8'), ord('9')}
 
+	local_range = [current_range[0], current_range[1]]
 	ind = 0
 	run = True
 	while run:
 		row = row_begin + 1
-		stdscr.addstr(row, 2, menus[0].format(current_range[0]))
+		stdscr.addstr(row, 2, menus[0].format(local_range[0]))
 		row += 1
-		stdscr.addstr(row, 2, menus[1].format(current_range[1]))
+		stdscr.addstr(row, 2, menus[1].format(local_range[1]))
 		row += 1
 		stdscr.addstr(row, 2, menus[2])
 
@@ -104,9 +105,9 @@ def set_range(stdscr, current_range, row_begin=2):
 			stdscr.move(row_begin + 1 + ind, 0)
 			stdscr.clrtoeol()
 			if ind == 0:
-				stdscr.addstr(row_begin + 1, 2, menus[0].format(current_range[0]), curses.A_BOLD)
+				stdscr.addstr(row_begin + 1, 2, menus[0].format(local_range[0]), curses.A_BOLD)
 			else:
-				stdscr.addstr(row_begin + 2, 2, menus[1].format(current_range[1]), curses.A_BOLD)
+				stdscr.addstr(row_begin + 2, 2, menus[1].format(local_range[1]), curses.A_BOLD)
 		else:
 			stdscr.addstr(row_begin + len(menus), 2, menus[-1], curses.A_BOLD)
 
@@ -118,8 +119,22 @@ def set_range(stdscr, current_range, row_begin=2):
 			ind += 1
 		elif ind == 2 and (c == curses.KEY_ENTER or c==10):
 			run = False
+		elif c == curses.KEY_BACKSPACE and (ind == 0 or ind == 1):
+			local_range[ind] = local_range[ind]//10
+			if local_range[1] < local_range[0]:
+				local_range[1] = local_range[0]
+		elif c in digits and (ind == 0 or ind == 1):
+			nr = int(c - ord('0'))
+			if ind == 0:
+				local_range[0] = local_range[0]*10 + nr
+				if local_range[0] > local_range[1]:
+					local_range[0] = local_range[1]
+			elif ind == 1:
+				local_range[1] = local_range[1]*10 + nr
+				if local_range[1] > upper_limit:
+					local_range[1] = upper_limit
 	#
-
+	return (local_range[0], local_range[1])
 #
 
 def analyze_file(stdscr, analyzer_class: FileAnalyzer, row_begin=2):
@@ -196,8 +211,7 @@ def run(stdscr):
 		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
 			selected_file = select_file(stdscr)
 		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
-			interval = (2, 3)
-			set_range(stdscr, interval)
+			pass
 		elif (cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
 			run = False
 		elif c == curses.KEY_UP and cmd > 0:
