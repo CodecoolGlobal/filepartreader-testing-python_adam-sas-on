@@ -80,6 +80,26 @@ def select_file(stdscr, dir_path="resources/"):
 	return files[file_no]
 #
 
+def list_on_stdscr(stdscr, array, row_begin=2):
+	stdscr.move(row_begin, 0)
+	stdscr.clrtobot()
+
+	scr_height,cols = stdscr.getmaxyx()
+	cols -= 1
+
+	row = row_begin
+	i = 0
+	while row < scr_height and i < len(array):
+		row_str = array[i]
+		i += 1
+		while i < len(array) and len(row_str) < cols - len(array[i]):
+			row_str += ", " + array[i]
+			i += 1
+
+		stdscr.addstr(row, 0, row_str)
+		row += 1
+#
+
 def set_range(stdscr, current_range, upper_limit, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
@@ -118,11 +138,12 @@ def set_range(stdscr, current_range, upper_limit, row_begin=2):
 		elif c == curses.KEY_DOWN and ind < 2:
 			ind += 1
 		elif ind == 2 and (c == curses.KEY_ENTER or c==10):
-			run = False
+			if local_range[1] >= local_range[0]:
+				run = False
+			else:
+				stdscr.addstr("  wrong range settings!")
 		elif c == curses.KEY_BACKSPACE and (ind == 0 or ind == 1):
 			local_range[ind] = local_range[ind]//10
-			if local_range[1] < local_range[0]:
-				local_range[1] = local_range[0]
 		elif c in digits and (ind == 0 or ind == 1):
 			nr = int(c - ord('0'))
 			if ind == 0:
@@ -157,9 +178,8 @@ def analyze_file(stdscr, analyzer_class: FileAnalyzer, row_begin=2):
 	stdscr.move(row_begin, 0)
 	stdscr.clrtobot()
 
-	stdscr.addstr(row_begin, 3, "Range of analysis: ")
+	stdscr.addstr(row_begin, 3, "Range of analysis: {}".format(analyzer_class.get_read_range()) )
 
-	chars = {ord('a')}
 	substring = ""
 
 	cmd = 0
@@ -170,16 +190,24 @@ def analyze_file(stdscr, analyzer_class: FileAnalyzer, row_begin=2):
 		c = stdscr.getch()
 
 		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
-			pass
+			result = analyzer_class.get_words_ordered_alphabetically()
+			stdscr.move(row_begin + 1, 0)
+			stdscr.clrtobot()
+			list_on_stdscr(stdscr, result, row_begin+1)
+			stdscr.getch()
 		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
-			pass
+			result = analyzer_class.get_strings_which_palindromes()
+			stdscr.move(row_begin + 1, 0)
+			stdscr.clrtobot()
+			list_on_stdscr(stdscr, result, row_begin+1)
+			stdscr.getch()
 		elif cmd == 2 and c != curses.KEY_UP and c != curses.KEY_DOWN:
 			if c == curses.KEY_ENTER or c==10:
 				pass
 			elif c == curses.KEY_BACKSPACE and len(substring) > 0:
 				substring = substring[:-1]
-			elif c in chars:
-				substring += str(c)
+			elif chr(c).isalnum():
+				substring += chr(c)
 		elif (cmd == 3 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
 			run = False
 		elif c == curses.KEY_UP and cmd > 0:
@@ -239,6 +267,7 @@ def run(stdscr):
 	check_keys = {curses.KEY_STAB, curses.KEY_ENTER, 10, curses.KEY_MARK, curses.KEY_SELECT, ' ', ord(' ')}
 
 	reader = FilePartReader()
+	reader.set_read_range(1, -1)
 	analyzer = FileAnalyzer(reader)
 
 	cmd = 0
@@ -255,11 +284,13 @@ def run(stdscr):
 
 		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
 			selected_file = select_file(stdscr)
-			reader.setup(dir_path + selected_file, 1, -1)
+			#reader.setup(dir_path + selected_file, 1, -1)
+			analyzer.set_file_path(dir_path + selected_file)
 		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
-			upper_limit = reader.lines_in_file()
+			upper_limit = analyzer.get_max_lines()
 			read_range = set_range(stdscr, reader.get_read_range(), upper_limit)
-			reader.set_read_range(read_range[0], read_range[1])
+			analyzer.set_read_range(read_range[0], read_range[1])
+			#reader.set_read_range(read_range[0], read_range[1])
 		elif (cmd == menu_len-1 and (c == curses.KEY_ENTER or c==10) ) or c == curses.KEY_EXIT:
 			run = False
 		elif c == curses.KEY_UP and cmd > 0:
@@ -274,8 +305,10 @@ def run(stdscr):
 			cmd = 0
 		elif cmd == 2 and c in check_keys:
 			case_sensitive = False if case_sensitive else True
+			analyzer.case_sensitive_set(case_sensitive)
 		elif cmd == 3 and c in check_keys:
 			words_uniqueness = False if words_uniqueness else True
+			analyzer.set_words_uniqueness(words_uniqueness)
 		elif cmd == menu_len-2 and len(selected_file):
 			analyze_file(stdscr, analyzer)
 		elif c == ord('q'):
