@@ -37,7 +37,21 @@ class FilePartReader:
 		if not self.file_exists:
 			raise FileNotFoundError
 
-		pass
+		file_content = ""
+		with open(self.file_path, encoding=self.charset) as f:
+			line_count = 1
+			while line_count < self.from_line:
+				next(f)
+				line_count += 1
+
+			content = []
+			while line_count <= self.to_line:
+				content.append( next(f) )
+				line_count += 1
+
+			file_content = "".join(content)
+		#
+		return file_content
 	#
 
 	def get_read_range(self):
