@@ -7,6 +7,13 @@ class ReaderTest(unittest.TestCase):
 	def setUp(self):
 		self.reader = FilePartReader()
 
+	def diff_for_symmetric_thousandth_numbers(self, number):
+		mod = number//1000
+		mod = number - 1000*mod
+		return 11 if mod > 990 else 110
+	#
+
+
 	def test_read_lines(self):
 		self.reader.setup("resources/lorem_ipsum.txt", 3, 6)
 		rows = []
@@ -146,6 +153,35 @@ class AnalyzerTest(unittest.TestCase):
 		result = self.analyzer.get_words_containing_substring(substring)
 		with self.subTest("StarWars analyzer-test, whole file, substring \"Ken\", case-insensitive, uniqueness = True"):
 			self.assertEqual(expected, result)
+	#
+
+	def test_get_strings_which_palindromes_by_numbers(self):
+		self.analyzer.set_file_path("resources/numbers_test.txt")
+		self.analyzer.set_read_range(1)
+
+		expected = []
+		n = 1001
+		diff = 110
+		repeated_number = 1551
+		while n <= repeated_number:
+			expected.append(str(n) )
+			n += diff
+		expected.append(str(repeated_number) )
+
+		repeated_number = 7007
+		while n <= repeated_number:
+			expected.append(str(n) )
+			diff = self.diff_for_symmetric_thousandth_numbers(n)
+			n += diff
+		expected.append(str(repeated_number) )
+
+		while n < 10000:
+			expected.append(str(n) )
+			diff = self.diff_for_symmetric_thousandth_numbers(n)
+			n+= diff
+
+		result = self.analyzer.get_strings_which_palindromes()
+		self.assertEqual(expected, result)
 	#
 
 
