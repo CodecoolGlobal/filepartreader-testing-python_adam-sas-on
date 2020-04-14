@@ -1,5 +1,6 @@
 import os
 import chardet
+import re
 
 class FilePartReader:
 	def __init__(self):
@@ -78,9 +79,9 @@ class FilePartReader:
 				rawdata = f.read()
 				chars = chardet.detect(rawdata)
 				self.charset = chars['encoding']
-				if self.to_line < 0:
-					self.max_lines = self.lines_in_file()
-					self.to_line = self.max_lines
+
+				self.max_lines = self.lines_in_file()
+				self.to_line = self.max_lines
 			#
 		else:
 			self.file_exists = False
