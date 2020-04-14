@@ -37,7 +37,9 @@ class ReaderTest(unittest.TestCase):
 		text = "\n".join(rows)
 
 		str_from_file = self.reader.read_lines()
-		self.assertEqual(text, str_from_file)
+		with self.subTest("Lorem ipsum reader-test, range [3, 6]"):
+			self.assertEqual(text, str_from_file)
+
 
 		self.reader.set_read_range(1, 1)
 		text = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur mauris nisl, "
@@ -51,7 +53,8 @@ class ReaderTest(unittest.TestCase):
 				"placerat, sem ipsum interdum metus, nec imperdiet lorem ligula et erat. "
 				"In hac habitasse platea dictumst.")
 		str_from_file = self.reader.read_lines()
-		self.assertEqual(text, str_from_file)
+		with self.subTest("Lorem ipsum test, range [1, 1]"):
+			self.assertEqual(text, str_from_file)
 	#
 
 	def test_read_lines_test_by_StarWars(self):
@@ -64,7 +67,9 @@ class ReaderTest(unittest.TestCase):
 		text = "\n".join(rows)
 
 		str_from_file = self.reader.read_lines()
-		self.assertEqual(text, str_from_file)
+		with self.subTest("StarWars reader-test, range [313, 321]"):
+			self.assertEqual(text, str_from_file)
+
 
 		self.reader.set_read_range(752, 775)
 		rows = ["OBI-WAN: Ever make your way as far into the interior as Coruscant?", "",
@@ -82,12 +87,15 @@ class ReaderTest(unittest.TestCase):
 		text = "\n".join(rows)
 		
 		str_from_file = self.reader.read_lines()
-		self.assertEqual(text, str_from_file)
+		with self.subTest("StarWars reader-test, range [752, 775]"):
+			self.assertEqual(text, str_from_file)
+
 
 		self.reader.set_read_range(452, 452)
 		text = "ANAKIN: May the Force be with you, Master."
 		str_from_file = self.reader.read_lines()
-		self.assertEqual(text, str_from_file)
+		with self.subTest("StarWars reader-test, range [452, 452]"):
+			self.assertEqual(text, str_from_file)
 	#
 
 class AnalyzerTest(unittest.TestCase):
@@ -109,8 +117,37 @@ class AnalyzerTest(unittest.TestCase):
 	#
 
 	def test_words_containing_substring_by_StarWars(self):
-		pass
+		self.analyzer.set_file_path("resources/Star_Wars_-_Attack_of_the_Clones.txt")
+		self.analyzer.set_read_range(1)
+
+		self.analyzer.case_sensitive_set(False) # case-insensitive;
+		self.analyzer.set_words_uniqueness(True)
+
+		substring = "Ani"
+		expected = ["Ani", "canisters", "animals", "mechanic", "DANIELS", "DANIEL", "HASSANI"]
+
+		result = self.analyzer.get_words_containing_substring(substring)
+		with self.subTest("StarWars analyzer-test, whole file, substring \"Ani\", case-insensitive, uniqueness = True"):
+			self.assertEqual(expected, result)
+
+
+		self.analyzer.set_words_uniqueness(False)
+		expected = ["Ani", "Ani", "Ani", "Ani", "Ani", "Ani", "Ani", "Ani", "canisters", "Ani", "Ani", "Ani", "Ani", "Ani", "Ani", "Ani", "Ani",
+				"animals", "animals", "Ani", "Ani", "mechanic", "DANIELS", "DANIELS", "DANIEL", "HASSANI"]
+
+		result = self.analyzer.get_words_containing_substring(substring)
+		with self.subTest("StarWars analyzer-test, whole file, substring \"Ani\", case-insensitive, uniqueness = False"):
+			self.assertEqual(expected, result)
+
+
+		self.analyzer.set_words_uniqueness(True)
+		substring = "Ken"
+		expected = ["Kenobi", "broken", "Tusken", "Tuskens", "KENNY"]
+		result = self.analyzer.get_words_containing_substring(substring)
+		with self.subTest("StarWars analyzer-test, whole file, substring \"Ken\", case-insensitive, uniqueness = True"):
+			self.assertEqual(expected, result)
 	#
+
 
 if __name__ == '__main__':
 	unittest.main()
