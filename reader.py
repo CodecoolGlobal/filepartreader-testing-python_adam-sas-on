@@ -81,7 +81,8 @@ class FilePartReader:
 				self.charset = chars['encoding']
 
 				self.max_lines = self.lines_in_file()
-				self.to_line = self.max_lines
+				if self.to_line < 0 or self.to_line > self.max_lines:
+					self.to_line = self.max_lines
 			#
 		else:
 			self.file_exists = False

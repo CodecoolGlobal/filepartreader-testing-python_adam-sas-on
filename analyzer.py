@@ -139,6 +139,3 @@ class FileAnalyzer:
     def set_words_uniqueness(self, read_unique):
         self.read_unique = read_unique
 
-    # TODO
-
-# list = str.splitlines()
