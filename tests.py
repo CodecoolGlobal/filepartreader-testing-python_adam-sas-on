@@ -171,13 +171,19 @@ class AnalyzerTest(unittest.TestCase):
 		repeated_number = 7007
 		while n <= repeated_number:
 			expected.append(str(n) )
-			diff = self.diff_for_symmetric_thousandth_numbers(n)
+			mod = n//1000
+			mod = n - 1000*mod
+			diff = 11 if mod > 990 else 110
+			#diff = self.diff_for_symmetric_thousandth_numbers(n)
 			n += diff
 		expected.append(str(repeated_number) )
 
 		while n < 10000:
 			expected.append(str(n) )
-			diff = self.diff_for_symmetric_thousandth_numbers(n)
+			mod = n//1000
+			mod = n - 1000*mod
+			diff = 11 if mod > 990 else 110
+			#diff = self.diff_for_symmetric_thousandth_numbers(n)
 			n+= diff
 
 		result = self.analyzer.get_strings_which_palindromes()
