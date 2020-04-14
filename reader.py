@@ -46,10 +46,13 @@ class FilePartReader:
 
 			content = []
 			while line_count <= self.to_line:
-				content.append( next(f) )
+				str_row = next(f)
+				if line_count == self.to_line:
+					str_row = str_row.rstrip('\n')
+				content.append(str_row)
 				line_count += 1
 
-			file_content = "\n".join(content)
+			file_content = "".join(content)
 		#
 		return file_content
 	#
