@@ -73,7 +73,29 @@ class FileAnalyzer:
             return []
 
         words_array = re.split(self.split_regex, file_content)
-        return words_array
+        words = []
+        if self.read_unique and self.case_sensitive:
+            for word in words_array:
+                if len(word) > 0 and word not in words and substring in word:
+                    words.append(word)
+        elif self.read_unique:
+            lower_substring = substring.lower()
+            for word in words_array:
+                if len(word) > 0 and lower_substring in word.lower() and word.casefold() not in (_.casefold() for _ in words):
+                    words.append(word)
+        elif not self.case_sensitive:
+            lower_substring = substring.lower()
+            i = 0
+            while i < len(words_array):
+                if lower_substring in words_array[i].lower():
+                    words.append(words_array[i])
+                i += 1
+        else:
+            for word in words_array:
+                if substring in word:
+                    words.append(word)
+
+        return words
     #
 
     def get_strings_which_palindromes(self):
