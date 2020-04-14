@@ -7,13 +7,6 @@ class ReaderTest(unittest.TestCase):
 	def setUp(self):
 		self.reader = FilePartReader()
 
-	def diff_for_symmetric_thousandth_numbers(self, number):
-		mod = number//1000
-		mod = number - 1000*mod
-		return 11 if mod > 990 else 110
-	#
-
-
 	def test_read_lines(self):
 		self.reader.setup("resources/lorem_ipsum.txt", 3, 6)
 		rows = []
@@ -110,6 +103,12 @@ class AnalyzerTest(unittest.TestCase):
 		reader = FilePartReader()
 		self.analyzer = FileAnalyzer(reader)
 
+	def diff_for_symmetric_thousandth_numbers(self, number):
+		mod = number//1000
+		mod = number - 1000*mod
+		return 11 if mod > 990 else 110
+	#
+
 	def test_get_words_ordered_alphabetically_by_StarWars(self):
 		self.analyzer.set_file_path("resources/Star_Wars_-_Attack_of_the_Clones.txt")
 		self.analyzer.set_read_range(892, 898)
@@ -171,19 +170,13 @@ class AnalyzerTest(unittest.TestCase):
 		repeated_number = 7007
 		while n <= repeated_number:
 			expected.append(str(n) )
-			mod = n//1000
-			mod = n - 1000*mod
-			diff = 11 if mod > 990 else 110
-			#diff = self.diff_for_symmetric_thousandth_numbers(n)
+			diff = self.diff_for_symmetric_thousandth_numbers(n)
 			n += diff
 		expected.append(str(repeated_number) )
 
 		while n < 10000:
 			expected.append(str(n) )
-			mod = n//1000
-			mod = n - 1000*mod
-			diff = 11 if mod > 990 else 110
-			#diff = self.diff_for_symmetric_thousandth_numbers(n)
+			diff = self.diff_for_symmetric_thousandth_numbers(n)
 			n+= diff
 
 		result = self.analyzer.get_strings_which_palindromes()
