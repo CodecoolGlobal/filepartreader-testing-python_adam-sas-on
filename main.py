@@ -189,21 +189,22 @@ def analyze_file(stdscr, analyzer_class: FileAnalyzer, row_begin=2):
 
 		c = stdscr.getch()
 
-		if cmd == 0 and (c == curses.KEY_ENTER or c==10):
-			result = analyzer_class.get_words_ordered_alphabetically()
-			stdscr.move(row_begin + 1, 0)
-			stdscr.clrtobot()
-			list_on_stdscr(stdscr, result, row_begin+1)
-			stdscr.getch()
-		elif cmd == 1 and (c == curses.KEY_ENTER or c==10):
-			result = analyzer_class.get_strings_which_palindromes()
+		if (cmd == 0 or cmd == 1) and (c == curses.KEY_ENTER or c==10):
+			if cmd == 0:
+				result = analyzer_class.get_words_ordered_alphabetically()
+			else:
+				result = analyzer_class.get_strings_which_palindromes()
 			stdscr.move(row_begin + 1, 0)
 			stdscr.clrtobot()
 			list_on_stdscr(stdscr, result, row_begin+1)
 			stdscr.getch()
 		elif cmd == 2 and c != curses.KEY_UP and c != curses.KEY_DOWN:
 			if c == curses.KEY_ENTER or c==10:
-				pass
+				result = analyzer_class.get_words_containing_substring(substring)
+				stdscr.move(row_begin + 1, 0)
+				stdscr.clrtobot()
+				list_on_stdscr(stdscr, result, row_begin+1)
+				stdscr.getch()
 			elif c == curses.KEY_BACKSPACE and len(substring) > 0:
 				substring = substring[:-1]
 			elif chr(c).isalnum():
