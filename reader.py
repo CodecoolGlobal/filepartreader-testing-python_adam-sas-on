@@ -49,7 +49,7 @@ class FilePartReader:
 				content.append( next(f) )
 				line_count += 1
 
-			file_content = "".join(content)
+			file_content = "\n".join(content)
 		#
 		return file_content
 	#
@@ -63,6 +63,9 @@ class FilePartReader:
 
 		self.from_line = from_line
 		self.to_line = to_line
+		if to_line < 0:
+			self.to_line = self.max_lines
+	#
 
 	def set_file_path(self, new_file):
 		self.file_path = new_file
@@ -74,6 +77,7 @@ class FilePartReader:
 				self.charset = chars['encoding']
 				if self.to_line < 0:
 					self.max_lines = self.lines_in_file()
+					self.to_line = self.max_lines
 			#
 		else:
 			self.file_exists = False
@@ -92,4 +96,7 @@ class FilePartReader:
 
 		return lines
 	#
+
+	def get_max_lines(self):
+		return self.max_lines
 
